@@ -3,10 +3,17 @@ import pandas
 import random
 
 BACKGROUND_COLOR = "#B1DDC6"
+data_dict = {}
+try:
+    data = pandas.read_csv("data/words_to_learn.csv")
+except FileNotFoundError:
+    original_data = pandas.read_csv("data/french_words.csv")
+    data_dict = original_data.to_dict(orient="records")
+else:
+    data_dict = data.to_dict(orient="records")
 
-data = pandas.read_csv("data/french_words.csv")
-data_dict = data.to_dict(orient="records")
 current_card = {}
+
 
 def next_card():
     global current_card, flip_timer
@@ -22,6 +29,15 @@ def flip_card():
     canvas.itemconfig(title, text="English", fill="green")
     canvas.itemconfig(word, text=current_card["English"], fill="green")
     canvas.itemconfig(card_background, image=card_background_image)
+
+
+def is_known():
+    data_dict.remove(current_card)
+    # save the data back to the file
+    data = pandas.DataFrame(data_dict)
+    data.to_csv("data/words_to_learn.csv", index=False)
+    print(len(data_dict))
+    next_card()
 
 
 window = Tk()
@@ -43,7 +59,7 @@ unknown_button.grid(row=1, column=0)
 
 # right button
 check_image = PhotoImage(file="images/right.png")
-known_button = Button(image=check_image, highlightthickness=0, highlightcolor="white", command=next_card)
+known_button = Button(image=check_image, highlightthickness=0, highlightcolor="white", command=is_known)
 known_button.grid(row=1, column=1)
 
 # call the function to create card
